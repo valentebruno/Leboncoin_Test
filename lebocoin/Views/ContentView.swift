@@ -1,9 +1,13 @@
 //  ContentView.swift
 //  lebocoin
 //  Created by Bruno Valente on 06/05/25.
+//
+//  ContentView.swift
+//  lebocoin
+//  Created by Bruno Valente on 06/05/25.
+//
 
 import SwiftUI
-
 struct ContentView: View {
     @State private var selectedTab = 0
     
@@ -16,20 +20,20 @@ struct ContentView: View {
     
     // Category data
     let categories = [
-        Category(id: 1, name: "Roupas", iconName: "tshirt"),
-        Category(id: 2, name: "Vagas", iconName: "briefcase"),
-        Category(id: 3, name: "Imóveis", iconName: "house"),
-        Category(id: 4, name: "Eletrônicos", iconName: "desktopcomputer"),
-        Category(id: 5, name: "Veículos", iconName: "car"),
-        Category(id: 6, name: "Serviços", iconName: "hammer"),
-        Category(id: 7, name: "Esportes", iconName: "sportscourt"),
-        Category(id: 8, name: "Para Casa", iconName: "house.fill")
+        Category(id: 1, name: "Vêtements", iconName: "tshirt"),
+        Category(id: 2, name: "Emplois", iconName: "briefcase"),
+        Category(id: 3, name: "Immobilier", iconName: "house"),
+        Category(id: 4, name: "Électronique", iconName: "desktopcomputer"),
+        Category(id: 5, name: "Véhicules", iconName: "car"),
+        Category(id: 6, name: "Services", iconName: "hammer"),
+        Category(id: 7, name: "Sports", iconName: "sportscourt"),
+        Category(id: 8, name: "Maison", iconName: "house.fill")
     ]
     
     private let tabItems = [
-        ("house.fill", "Home"),
-        ("star.fill", "Favorites"),
-        ("gearshape.fill", "Settings")
+        ("house.fill", "Accueil"),
+        ("star.fill", "Favoris"),
+        ("gearshape.fill", "Paramètres")
     ]
     
     var body: some View {
@@ -38,7 +42,7 @@ struct ContentView: View {
             ScrollViewReader { scrollProxy in
                 ScrollView {
                     LazyVStack {
-                        // Leboncoin Logo
+                        // App Logo
                         Image("topLogo")
                             .resizable()
                             .scaledToFit()
@@ -51,7 +55,7 @@ struct ContentView: View {
                             Image(systemName: "magnifyingglass")
                                 .foregroundColor(.gray)
                             
-                            TextField("O que você está procurando?", text: $searchText)
+                            TextField("Que recherchez-vous ?", text: $searchText)
                                 .foregroundColor(.primary)
                             
                             if !searchText.isEmpty {
@@ -73,7 +77,7 @@ struct ContentView: View {
                         HStack {
                             Image(systemName: "location.fill")
                                 .foregroundColor(.orange)
-                            Text("Toda a França")
+                            Text("Toute la France")
                                 .foregroundColor(.primary)
                             Spacer()
                             Image(systemName: "chevron.right")
@@ -84,7 +88,7 @@ struct ContentView: View {
                         .padding(.bottom, 15)
                         
                         HStack {
-                            Text("Principais categorias")
+                            Text("Catégories principales")
                                 .font(.subheadline)
                                 .fontWeight(.medium)
                                 .foregroundColor(.gray)
@@ -125,7 +129,7 @@ struct ContentView: View {
                         VStack(spacing: 15) {
                             // Section title with recommendations
                             HStack {
-                                Text("De acordo com o seu último uso")
+                                Text("D'après votre utilisation récente")
                                     .font(.subheadline)
                                     .fontWeight(.medium)
                                     .foregroundColor(.gray)
@@ -155,11 +159,11 @@ struct ContentView: View {
                                         .padding(8)
                                     }
                                     
-                                    Text("Calça Jeans")
+                                    Text("Jean Bleu")
                                         .font(.caption)
                                         .foregroundColor(.primary)
                                     
-                                    Text("R$ 48")
+                                    Text("48 €")
                                         .font(.caption)
                                         .fontWeight(.bold)
                                 }
@@ -184,12 +188,12 @@ struct ContentView: View {
                                         .padding(8)
                                     }
                                     
-                                    Text("Jaqueta de Couro marrom")
+                                    Text("Veste en Cuir Marron")
                                         .font(.caption)
                                         .foregroundColor(.primary)
                                         .lineLimit(1)
                                     
-                                    Text("R$ 90")
+                                    Text("90 €")
                                         .font(.caption)
                                         .fontWeight(.bold)
                                 }

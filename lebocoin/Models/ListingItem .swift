@@ -28,6 +28,7 @@ struct ListingItem: Codable, Identifiable {
     }
 }
 
+
 struct ImagesURL: Codable {
     let small: String?
     let thumb: String?
