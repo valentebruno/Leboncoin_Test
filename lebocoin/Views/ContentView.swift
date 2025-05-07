@@ -1,25 +1,19 @@
 //  ContentView.swift
 //  lebocoin
 //  Created by Bruno Valente on 06/05/25.
-//
 //  ContentView.swift
-//  lebocoin
-//  Created by Bruno Valente on 06/05/25.
-//
-
 import SwiftUI
+
 struct ContentView: View {
-    @State private var selectedTab = 0
+     @State private var selectedTab = 0
     
-    // State for tracking scroll offset and tab bar visibility
-    @State private var scrollOffset: CGFloat = 0
+     @State private var scrollOffset: CGFloat = 0
     @State private var previousScrollOffset: CGFloat = 0
-    @State private var tabBarVisible = true
+    @State private var tabBarVisible = true // default visible
     
     @State private var searchText = ""
     
-    // Category data
-    let categories = [
+     let categories = [
         Category(id: 1, name: "Vêtements", iconName: "tshirt"),
         Category(id: 2, name: "Emplois", iconName: "briefcase"),
         Category(id: 3, name: "Immobilier", iconName: "house"),
@@ -33,25 +27,21 @@ struct ContentView: View {
     private let tabItems = [
         ("house.fill", "Accueil"),
         ("star.fill", "Favoris"),
-        ("gearshape.fill", "Paramètres")
-    ]
-    
-    var body: some View {
+        ("gearshape.fill", "Paramètres")]
+ 
+        var body: some View {
         ZStack(alignment: .bottom) {
-            // Main content with scrolling behavior
-            ScrollViewReader { scrollProxy in
+             ScrollViewReader { proxy in
                 ScrollView {
                     LazyVStack {
-                        // App Logo
-                        Image("topLogo")
+                         Image("topLogo") // FIXME: need higher res image!
                             .resizable()
                             .scaledToFit()
                             .frame(height: 60)
                             .padding(.horizontal)
                             .padding(.top, 20)
                         
-                        // Search Bar
-                        HStack {
+                         HStack {
                             Image(systemName: "magnifyingglass")
                                 .foregroundColor(.gray)
                             
@@ -73,8 +63,7 @@ struct ContentView: View {
                         .padding(.horizontal)
                         .padding(.bottom, 10)
                         
-                        // Location selector
-                        HStack {
+                         HStack {
                             Image(systemName: "location.fill")
                                 .foregroundColor(.orange)
                             Text("Toute la France")
@@ -97,10 +86,9 @@ struct ContentView: View {
                         .padding(.horizontal)
                         .padding(.bottom, 5)
                         
-                        // Categories carousel
-                        ScrollView(.horizontal, showsIndicators: false) {
+                         ScrollView(.horizontal, showsIndicators: false) {
                             HStack(spacing: 15) {
-                                ForEach(categories) { category in
+                                ForEach(categories) { cat in
                                     VStack {
                                         ZStack {
                                             RoundedRectangle(cornerRadius: 8)
@@ -108,12 +96,12 @@ struct ContentView: View {
                                                 .frame(width: 80, height: 80)
                                                 .shadow(color: Color.black.opacity(0.1), radius: 2, x: 0, y: 1)
                                             
-                                            Image(systemName: category.iconName)
+                                            Image(systemName: cat.iconName)
                                                 .font(.system(size: 30))
                                                 .foregroundColor(.orange)
                                         }
                                         
-                                        Text(category.name)
+                                        Text(cat.name)
                                             .font(.caption)
                                             .foregroundColor(.primary)
                                             .lineLimit(1)
@@ -138,66 +126,20 @@ struct ContentView: View {
                             .padding(.horizontal)
                             .padding(.top, 10)
                             
-                            // Item grid (2 items per row)
-                            LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 15) {
-                                // Item 1 - Blue jeans
-                                VStack(alignment: .leading) {
-                                    ZStack(alignment: .topTrailing) {
-                                        Image(systemName: "rectangle.fill")
-                                            .resizable()
-                                            .aspectRatio(contentMode: .fill)
-                                            .frame(height: 120)
-                                            .foregroundColor(.blue.opacity(0.2))
-                                            .cornerRadius(8)
-                                        
-                                        Button(action: {}) {
-                                            Image(systemName: "heart")
-                                                .padding(5)
-                                                .background(Circle().fill(Color.white))
-                                                .foregroundColor(.gray)
-                                        }
-                                        .padding(8)
-                                    }
-                                    
-                                    Text("Jean Bleu")
-                                        .font(.caption)
-                                        .foregroundColor(.primary)
-                                    
-                                    Text("48 €")
-                                        .font(.caption)
-                                        .fontWeight(.bold)
-                                }
-                                .padding(.bottom, 5)
+                             let columns = [GridItem(.flexible()), GridItem(.flexible())]
+                            LazyVGrid(columns: columns, spacing: 15) {
+                                // Item 1 - Blue jeans - this works better with an actual image
+                                ItemView(
+                                    bgColor: .blue.opacity(0.2),
+                                    title: "Jean Bleu",
+                                    price: "48 €"
+                                )
                                 
-                                // Item 2 - Leather jacket
-                                VStack(alignment: .leading) {
-                                    ZStack(alignment: .topTrailing) {
-                                        Image(systemName: "rectangle.fill")
-                                            .resizable()
-                                            .aspectRatio(contentMode: .fill)
-                                            .frame(height: 120)
-                                            .foregroundColor(.brown.opacity(0.2))
-                                            .cornerRadius(8)
-                                        
-                                        Button(action: {}) {
-                                            Image(systemName: "heart")
-                                                .padding(5)
-                                                .background(Circle().fill(Color.white))
-                                                .foregroundColor(.gray)
-                                        }
-                                        .padding(8)
-                                    }
-                                    
-                                    Text("Veste en Cuir Marron")
-                                        .font(.caption)
-                                        .foregroundColor(.primary)
-                                        .lineLimit(1)
-                                    
-                                    Text("90 €")
-                                        .font(.caption)
-                                        .fontWeight(.bold)
-                                }
-                                .padding(.bottom, 5)
+                                 ItemView(
+                                    bgColor: .brown.opacity(0.2),
+                                    title: "Veste en Cuir Marron",
+                                    price: "90 €"
+                                )
                             }
                             .padding(.horizontal)
                         }
@@ -217,8 +159,7 @@ struct ContentView: View {
                     // Update tab bar visibility based on scroll direction
                     let direction = value > previousScrollOffset ? ScrollDirection.up : ScrollDirection.down
                     
-                    // Only update visibility when we have scrolled a meaningful amount
-                    if abs(value - previousScrollOffset) > 10 {
+                     if abs(value - previousScrollOffset) > 10 {
                         withAnimation {
                             tabBarVisible = direction == .up
                         }
@@ -228,8 +169,7 @@ struct ContentView: View {
                 }
             }
             
-            // Custom Tab Bar
-            TabBarView(selectedTab: $selectedTab, tabItems: tabItems, isVisible: $tabBarVisible)
+             TabBarView(selectedTab: $selectedTab, tabItems: tabItems, isVisible: $tabBarVisible)
         }
     }
 }
@@ -254,7 +194,7 @@ struct TabBarView: View {
                         Text(tabItems[index].1)
                             .font(.caption)
                     }
-                    .foregroundColor(selectedTab == index ? .blue : .gray)
+                    .foregroundColor(selectedTab == index ? .orange : .gray)
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 8)
                 }
@@ -263,12 +203,56 @@ struct TabBarView: View {
         .background(
             RoundedRectangle(cornerRadius: 25)
                 .fill(Material.regularMaterial)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 25)
+                        .stroke(Color.orange, lineWidth: 1)
+                )
                 .shadow(color: Color.black.opacity(0.15), radius: 8, x: 0, y: -2)
         )
         .padding(.horizontal, 20)
-        .padding(.bottom, UIApplication.shared.windows.first?.safeAreaInsets.bottom == 0 ? 8 : 0)
+        .padding(.bottom, UIApplication.shared.windows.first?.safeAreaInsets.bottom == 0 ? 8 : 0) // old API but works
         .offset(y: isVisible ? 0 : 100) // Move off screen when not visible
         .animation(.spring(response: 0.3), value: isVisible)
+    }
+}
+
+ struct ItemView: View {
+    var bgColor: Color
+    var title: String
+    var price: String
+    
+    var body: some View {
+        VStack(alignment: .leading) {
+            ZStack(alignment: .topTrailing) {
+                Image(systemName: "rectangle.fill")
+                    .resizable()
+                    .aspectRatio(contentMode: .fill)
+                    .frame(height: 120)
+                    .foregroundColor(bgColor)
+                    .cornerRadius(8)
+                
+                Button(action: {
+                    // Add to favorites - implement later
+                    print("Added to favorites")
+                }) {
+                    Image(systemName: "heart")
+                        .padding(5)
+                        .background(Circle().fill(Color.white))
+                        .foregroundColor(.gray)
+                }
+                .padding(8)
+            }
+            
+            Text(title)
+                .font(.caption)
+                .foregroundColor(.primary)
+                .lineLimit(1)
+            
+            Text(price)
+                .font(.caption)
+                .fontWeight(.bold)
+        }
+        .padding(.bottom, 5)
     }
 }
 
@@ -279,19 +263,20 @@ enum ScrollDirection {
 struct ScrollOffsetPreferenceKey: PreferenceKey {
     static var defaultValue: CGFloat = 0
     
+    // Reduce method required by the protocol
     static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
         value = nextValue()
     }
 }
 
-struct ContentView_Previews: PreviewProvider {
+ struct ContentView_Previews: PreviewProvider {
     static var previews: some View {
         ContentView()
-    }
+     }
 }
 
-struct Category: Identifiable {
+ struct Category: Identifiable {
     let id: Int
     let name: String
     let iconName: String
-}
+ }
