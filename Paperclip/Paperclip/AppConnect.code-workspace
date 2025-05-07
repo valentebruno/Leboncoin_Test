@@ -1,0 +1,286 @@
+import SwiftUI
+
+struct Category: Identifiable, Decodable {
+    let id: Int
+    let name: String
+}
+
+struct Ad: Identifiable, Decodable {
+    let id: Int
+    let category_id: Int
+    let title: String
+    let description: String
+    let price: Double
+    let images_url: ImagesURL?
+    let creation_date: String
+    let is_urgent: Bool
+    let siret: String?
+    struct ImagesURL: Decodable {
+        let small: String?
+        let thumb: String?
+    }
+}
+
+struct ContentView: View {
+    @State private var categories: [Category] = []
+    @State private var ads: [Ad] = []
+    @State private var isLoadingCategories = true
+    @State private var isLoadingAds = false
+    @State private var searchText: String = ""
+
+    var filteredAds: [Ad] {
+        if searchText.isEmpty {
+            return ads
+        } else {
+            return ads.filter { ad in
+                ad.title.localizedCaseInsensitiveContains(searchText) ||
+                ad.description.localizedCaseInsensitiveContains(searchText)
+            }
+        }
+    }
+
+    var body: some View {
+        VStack(spacing: 0) {
+            // Top logo at the very top, outside NavigationView
+            Image("topLogo")
+                .resizable()
+                .scaledToFit()
+                .frame(height: 80)
+                .padding(.top)
+
+            NavigationView {
+                VStack {
+                    // Search bar at the top
+                    TextField("Search ads...", text: $searchText)
+                        .textFieldStyle(RoundedBorderTextFieldStyle())
+                        .padding([.top, .horizontal])
+
+                    if !searchText.isEmpty {
+                        // Show filtered ads when searching
+                        ZStack {
+                            List(filteredAds) { ad in
+                                NavigationLink(
+                                    destination: AdDetailView(
+                                        ad: ad,
+                                        categoryName: categories.first(where: { $0.id == ad.category_id })?.name ?? "Unknown"
+                                    )
+                                ) {
+                                    HStack(alignment: .top) {
+                                        AsyncImage(url: URL(string: ad.images_url?.thumb ?? "")) { phase in
+                                            if let image = phase.image {
+                                                image
+                                                    .resizable()
+                                                    .aspectRatio(contentMode: .fill)
+                                                    .frame(width: 80, height: 80)
+                                                    .clipped()
+                                            } else if phase.error != nil {
+                                                Color.red.frame(width: 80, height: 80)
+                                            } else {
+                                                ProgressView().frame(width: 80, height: 80)
+                                            }
+                                        }
+                                        VStack(alignment: .leading, spacing: 4) {
+                                            HStack {
+                                                Text(ad.title)
+                                                    .font(.headline)
+                                                if ad.is_urgent {
+                                                    Text("URGENT")
+                                                        .font(.caption)
+                                                        .foregroundColor(.white)
+                                                        .padding(4)
+                                                        .background(Color.red)
+                                                        .cornerRadius(4)
+                                                }
+                                            }
+                                            Text(categories.first(where: { $0.id == ad.category_id })?.name ?? "Unknown")
+                                                .font(.subheadline)
+                                                .foregroundColor(.secondary)
+                                            Text("Price: \(ad.price, specifier: "%.2f") €")
+                                                .font(.subheadline)
+                                        }
+                                    }
+                                    .padding(.vertical, 4)
+                                }
+                            }
+                            .clipShape(RoundedRectangle(cornerRadius: 8))
+                            RoundedRectangle(cornerRadius: 8)
+                                .stroke(Color.orange, lineWidth: 2)
+                        }
+                        .padding(.horizontal)
+                    } else {
+                        // Show categories list when not searching
+                        ZStack {
+                            List(categories) { category in
+                                NavigationLink(
+                                    destination: AdsListView(category: category, allAds: ads, categories: categories),
+                                    label: {
+                                        Text(category.name)
+                                    }
+                                )
+                            }
+                            .clipShape(RoundedRectangle(cornerRadius: 8))
+                            RoundedRectangle(cornerRadius: 8)
+                                .stroke(Color.orange, lineWidth: 2)
+                        }
+                        .padding(.horizontal)
+                    }
+                }
+                .navigationTitle("Categories")
+                .onAppear {
+                    fetchCategories()
+                    fetchAds()
+                }
+            }
+        }
+    }
+
+    private func fetchCategories() {
+        guard let url = URL(string: "https://raw.githubusercontent.com/leboncoin/paperclip/master/categories.json") else { return }
+        isLoadingCategories = true
+        URLSession.shared.dataTask(with: url) { data, _, _ in
+            if let data = data {
+                if let decoded = try? JSONDecoder().decode([Category].self, from: data) {
+                    DispatchQueue.main.async {
+                        self.categories = decoded
+                        self.isLoadingCategories = false
+                    }
+                }
+            }
+        }.resume()
+    }
+
+    private func fetchAds() {
+        guard let url = URL(string: "https://raw.githubusercontent.com/leboncoin/paperclip/master/listing.json") else { return }
+        isLoadingAds = true
+        URLSession.shared.dataTask(with: url) { data, _, _ in
+            if let data = data {
+                if let decoded = try? JSONDecoder().decode([Ad].self, from: data) {
+                    DispatchQueue.main.async {
+                        self.ads = decoded
+                        self.isLoadingAds = false
+                    }
+                }
+            }
+        }.resume()
+    }
+}
+
+struct AdsListView: View {
+    let category: Category
+    let allAds: [Ad]
+    let categories: [Category]
+
+    var filteredAds: [Ad] {
+        allAds.filter { $0.category_id == category.id }
+    }
+
+    var body: some View {
+        List(filteredAds) { ad in
+            NavigationLink(destination: AdDetailView(ad: ad, categoryName: category.name)) {
+                HStack(alignment: .top) {
+                    AsyncImage(url: URL(string: ad.images_url?.thumb ?? "")) { phase in
+                        if let image = phase.image {
+                            image
+                                .resizable()
+                                .aspectRatio(contentMode: .fill)
+                                .frame(width: 80, height: 80)
+                                .clipped()
+                        } else if phase.error != nil {
+                            Color.red.frame(width: 80, height: 80)
+                        } else {
+                            ProgressView().frame(width: 80, height: 80)
+                        }
+                    }
+                    VStack(alignment: .leading, spacing: 4) {
+                        HStack {
+                            Text(ad.title)
+                                .font(.headline)
+                            if ad.is_urgent {
+                                Text("URGENT")
+                                    .font(.caption)
+                                    .foregroundColor(.white)
+                                    .padding(4)
+                                    .background(Color.red)
+                                    .cornerRadius(4)
+                            }
+                        }
+                        Text(category.name)
+                            .font(.subheadline)
+                            .foregroundColor(.secondary)
+                        Text("Price: \(ad.price, specifier: "%.2f") €")
+                            .font(.subheadline)
+                        // Optionally, show a short description
+                        // Text(ad.description).font(.caption).lineLimit(1)
+                    }
+                }
+                .padding(.vertical, 4)
+            }
+        }
+        .navigationTitle(category.name)
+    }
+}
+
+struct AdDetailView: View {
+    let ad: Ad
+    let categoryName: String
+
+    var body: some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: 16) {
+                // Top Categories in orange
+                Text("Top Categories")
+                    .font(.headline)
+                    .foregroundColor(.orange)
+                    .padding(.bottom, 8)
+
+                if let urlString = ad.images_url?.small, let url = URL(string: urlString) {
+                    AsyncImage(url: url) { phase in
+                        if let image = phase.image {
+                            image
+                                .resizable()
+                                .aspectRatio(contentMode: .fit)
+                                .frame(maxWidth: .infinity)
+                        } else if phase.error != nil {
+                            Color.red.frame(height: 200)
+                        } else {
+                            ProgressView().frame(height: 200)
+                        }
+                    }
+                }
+                Text(ad.title)
+                    .font(.title)
+                    .bold()
+                HStack {
+                    Text(categoryName)
+                        .font(.headline)
+                        .foregroundColor(.secondary)
+                    if ad.is_urgent {
+                        Text("URGENT")
+                            .font(.caption)
+                            .foregroundColor(.white)
+                            .padding(4)
+                            .background(Color.red)
+                            .cornerRadius(4)
+                    }
+                }
+                Text("Price: \(ad.price, specifier: "%.2f") €")
+                    .font(.title2)
+                Text("Description:")
+                    .font(.headline)
+                Text(ad.description)
+                    .font(.body)
+                Text("Created: \(ad.creation_date)")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+                if let siret = ad.siret {
+                    Text("SIRET: \(siret)")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                }
+            }
+            .padding()
+        }
+        .navigationTitle(ad.title)
+        .navigationBarTitleDisplayMode(.inline)
+    }
+}
